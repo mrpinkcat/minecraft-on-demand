@@ -1,17 +1,7 @@
-import { KubeConfig, CoreV1Api } from '@kubernetes/client-node';
+import { k8sApi } from '~~/server/utils/kubernetes';
+import type { V1NamespaceList } from '@kubernetes/client-node';
 
-const kc = new KubeConfig();
-kc.loadFromDefault();
-// kc.
-
-const k8sApi = kc.makeApiClient(CoreV1Api);
-
-k8sApi.listNamespacedPod({ namespace: 'default' }).then((res) => {
-  console.log(res);
-});
-
-export default defineEventHandler(() => {
-  return {
-    message: 'Hello from the server!',
-  };
+export default defineEventHandler(async () => {
+  const namespaces: V1NamespaceList = await k8sApi.listNamespace();
+  return namespaces;
 });
