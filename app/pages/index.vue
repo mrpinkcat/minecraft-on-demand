@@ -5,7 +5,11 @@
     <ULink v-if="!user" to="/api/auth/login" external>
       <UButton> Login </UButton>
     </ULink>
-    <UButton v-else @click="logout"> Logout </UButton>
+    <template v-else>
+      <UButton @click="logout"> Logout </UButton>
+      <UAvatar :src="user.avatarUrl" />
+      <p>{{ user.username }}</p>
+    </template>
     <code>
       <pre>
         {{ message?.items.map((namespace) => namespace.metadata?.name) }}
