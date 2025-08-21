@@ -71,13 +71,19 @@ export default defineEventHandler(async (event) => {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
+    maxAge: 15 * 60, // 15 minutes
   });
+
+  console.log('[SERVER] Access token set in cookies');
 
   setCookie(event, 'refresh_token', refreshToken, {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
+    maxAge: 7 * 24 * 60 * 60, // 7 days
   });
 
-  return sendRedirect(event, '/');
+  console.log('[SERVER] Refresh token set in cookies');
+
+  return sendRedirect(event, '/app');
 });
