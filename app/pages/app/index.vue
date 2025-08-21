@@ -8,13 +8,11 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '~/generated/prisma';
-
 definePageMeta({
   name: 'dashboard',
 });
 
-const user = useState<User | undefined>('user');
+const user = useUser();
 
 async function logout() {
   await $fetch('/api/auth/logout', { method: 'POST' });

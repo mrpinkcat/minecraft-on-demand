@@ -1,5 +1,3 @@
-import type { User } from '~/generated/prisma';
-
 export default defineNuxtRouteMiddleware(async (to) => {
   console.log(
     `[CLIENT authMiddleware] Running auth middleware for ${
@@ -14,7 +12,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     );
     return;
   }
-  const user = useState<User | undefined>('user');
+  const user = useUser();
   if (!user.value) {
     console.log(
       `[CLIENT authMiddleware] No user found, redirecting to home page`

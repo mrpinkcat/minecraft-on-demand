@@ -12,11 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '~/generated/prisma';
-
 definePageMeta({
   name: 'home',
 });
 
-const user = useState<User | undefined>('user');
+const user = useUser();
 </script>
