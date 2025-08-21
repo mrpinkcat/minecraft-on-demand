@@ -1,6 +1,6 @@
 import { verifyAccessToken } from '~~/server/utils/token';
 import { db } from '~~/server/utils/drizzle';
-import { usersTable } from '~~/db/schema';
+import { usersTable } from '~~/server/utils/drizzle/schema';
 import { eq } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
 

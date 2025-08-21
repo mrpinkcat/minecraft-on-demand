@@ -2,7 +2,9 @@ import { db } from '~~/server/utils/drizzle';
 import { REST } from '@discordjs/rest';
 import { APIGuild, APIUser, Routes } from 'discord-api-types/v10';
 import { createAccessToken, createRefreshToken } from '~~/server/utils/token';
-import { usersTable } from '~~/db/schema';
+import { usersTable } from '~~/server/utils/drizzle/schema';
+import { createUserNamespace } from '~~/server/utils/kubernetes/namespace';
+import { eq } from 'drizzle-orm';
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
@@ -33,10 +35,12 @@ export default defineEventHandler(async (event) => {
     version: '10',
     authPrefix: 'Bearer',
   }).setToken(tokenResponse.access_token);
-  const user = (await discordRestApi.get(Routes.user('@me'))) as APIUser;
-  const guilds = (await discordRestApi.get(Routes.userGuilds())) as APIGuild[];
+  const discordUser = (await discordRestApi.get(Routes.user('@me'))) as APIUser;
+  const discordUserGuilds = (await discordRestApi.get(
+    Routes.userGuilds()
+  )) as APIGuild[];
 
-  const isInGuild = guilds.some(
+  const isInGuild = discordUserGuilds.some(
     (guild) => guild.id === process.env.DISCORD_GUILD_ID
   );
 
@@ -47,29 +51,31 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const accessToken = await createAccessToken(user.id);
-  const refreshToken = await createRefreshToken(user.id);
+  const accessToken = await createAccessToken(discordUser.id);
+  const refreshToken = await createRefreshToken(discordUser.id);
 
-  console.log('[SERVER] Upserting user');
-
-  await db
+  const user = await db
     .insert(usersTable)
     .values({
-      id: user.id,
-      avatarId: user.avatar,
-      username: user.username,
+      id: discordUser.id,
+      avatarId: discordUser.avatar,
+      username: discordUser.username,
       refreshToken,
     })
     .onConflictDoUpdate({
       target: usersTable.id,
       set: {
-        avatarId: user.avatar,
-        username: user.username,
+        avatarId: discordUser.avatar,
+        username: discordUser.username,
         refreshToken,
       },
-    });
+    })
+    .returning()
+    .get();
 
-  console.log('[SERVER] User upserted successfully');
+  event.context.user = user;
+
+  console.log('[SERVER] User data updated/saved in database');
 
   setCookie(event, 'access_token', accessToken, {
     httpOnly: true,
@@ -77,9 +83,6 @@ export default defineEventHandler(async (event) => {
     secure: process.env.NODE_ENV === 'production',
     maxAge: 15 * 60, // 15 minutes
   });
-
-  console.log('[SERVER] Access token set in cookies');
-
   setCookie(event, 'refresh_token', refreshToken, {
     httpOnly: true,
     sameSite: 'lax',
@@ -87,7 +90,19 @@ export default defineEventHandler(async (event) => {
     maxAge: 7 * 24 * 60 * 60, // 7 days
   });
 
-  console.log('[SERVER] Refresh token set in cookies');
+  console.log('[SERVER] Cookies set successfully');
+
+  const namespace = await createUserNamespace(event.context);
+
+  console.log('[SERVER] User namespace created');
+
+  await db
+    .update(usersTable)
+    .set({ namespace: namespace.metadata?.name })
+    .where(eq(usersTable.id, discordUser.id))
+    .run();
+
+  console.log('[SERVER] User namespace updated in database');
 
   return sendRedirect(event, '/app');
 });

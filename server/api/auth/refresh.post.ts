@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { usersTable } from '~~/db/schema';
+import { usersTable } from '~~/server/utils/drizzle/schema';
 import { db } from '~~/server/utils/drizzle';
 import { verifyRefreshToken, createAccessToken } from '~~/server/utils/token';
 
