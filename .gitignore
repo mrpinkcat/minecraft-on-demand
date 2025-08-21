@@ -25,6 +25,4 @@ logs
 
 kubeconfig
 
-/app/generated/prisma
-
-/prisma/dev.db
+dev.db

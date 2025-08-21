@@ -1,10 +1,3 @@
 <template>
-  <UApp>
-    <NuxtPage />
-  </UApp>
+  <NuxtPage />
 </template>
-
-<style>
-@import 'tailwindcss';
-@import '@nuxt/ui';
-</style>

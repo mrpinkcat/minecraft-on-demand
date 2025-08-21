@@ -1,7 +1,8 @@
-import { prisma } from '~~/server/utils/prisma';
+import { db } from '~~/server/utils/drizzle';
 import { REST } from '@discordjs/rest';
 import { APIGuild, APIUser, Routes } from 'discord-api-types/v10';
 import { createAccessToken, createRefreshToken } from '~~/server/utils/token';
+import { usersTable } from '~~/db/schema';
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
@@ -51,19 +52,22 @@ export default defineEventHandler(async (event) => {
 
   console.log('[SERVER] Upserting user');
 
-  await prisma.user.upsert({
-    where: { id: user.id },
-    update: {
-      avatarId: user.avatar,
-      username: user.username,
-    },
-    create: {
+  await db
+    .insert(usersTable)
+    .values({
       id: user.id,
       avatarId: user.avatar,
       username: user.username,
       refreshToken,
-    },
-  });
+    })
+    .onConflictDoUpdate({
+      target: usersTable.id,
+      set: {
+        avatarId: user.avatar,
+        username: user.username,
+        refreshToken,
+      },
+    });
 
   console.log('[SERVER] User upserted successfully');
 

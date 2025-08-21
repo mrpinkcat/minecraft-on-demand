@@ -2,12 +2,10 @@
   <main>
     <h1>Accueil Minecraft On Demand</h1>
 
-    <ULink v-if="!user" to="/api/auth/login" external as="button">
-      <UButton>Login with Discord</UButton>
-    </ULink>
-    <ULink v-else to="/app">
-      <UButton>Create a server as {{ user.username }}</UButton>
-    </ULink>
+    <DiscordLogin v-if="!user" />
+    <NuxtLink v-else to="/app">
+      <button>Create a server as {{ user.username }}</button>
+    </NuxtLink>
   </main>
 </template>
 

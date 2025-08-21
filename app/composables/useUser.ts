@@ -1,3 +1,5 @@
-import type { User } from '~/generated/prisma';
+import type { InferSelectModel } from 'drizzle-orm';
+import { usersTable } from '~~/db/schema';
 
-export const useUser = () => useState<User | undefined>('user');
+export const useUser = () =>
+  useState<InferSelectModel<typeof usersTable> | undefined>('user');

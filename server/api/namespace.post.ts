@@ -1,3 +1,7 @@
+import { eq } from 'drizzle-orm';
+import { usersTable } from '~~/db/schema';
+import { db } from '~~/server/utils/drizzle';
+
 export default defineEventHandler(async (event) => {
   if (event.context.user?.namespace) {
     throw createError({
@@ -41,14 +45,11 @@ export default defineEventHandler(async (event) => {
 
   await new Promise((resolve) => setTimeout(resolve, 4000));
 
-  await prisma.user.update({
-    where: {
-      id: event.context.auth.id,
-    },
-    data: {
-      namespace: namespaceName,
-    },
-  });
+  await db
+    .update(usersTable)
+    .set({ namespace: namespaceName })
+    .where(eq(usersTable.id, event.context.auth.id))
+    .run();
 
   eventStream.push({
     data: `Namespace ${namespaceName} created and linked to user.`,

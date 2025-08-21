@@ -1,8 +1,8 @@
 <template>
   <div>
     <h1>Minecraft On Demand APP</h1>
-    <UButton @click="logout">Logout</UButton>
-    <UAvatar v-if="user" :src="avatarUrl" />
+    <button @click="logout">Logout</button>
+    <NuxtImg v-if="user" :src="avatarUrl" />
     <p v-if="user">{{ user.username }}</p>
   </div>
 </template>

@@ -1,10 +1,12 @@
 import { verifyAccessToken } from '~~/server/utils/token';
-import { prisma } from '~~/server/utils/prisma';
-import type { User } from '~~/app/generated/prisma';
+import { db } from '~~/server/utils/drizzle';
+import { usersTable } from '~~/db/schema';
+import { eq } from 'drizzle-orm';
+import type { InferSelectModel } from 'drizzle-orm';
 
 declare module 'h3' {
   interface H3EventContext {
-    user?: User;
+    user?: InferSelectModel<typeof usersTable>;
   }
 }
 
@@ -28,9 +30,11 @@ export default defineEventHandler(async (event) => {
         '[SERVER authMiddleware] Access token verified, fetching user from database for userId: ' +
           userId
       );
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-      });
+      const user = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, userId))
+        .get();
       console.log(
         '[SERVER authMiddleware] User fetched from database and set in context for userId: ' +
           userId

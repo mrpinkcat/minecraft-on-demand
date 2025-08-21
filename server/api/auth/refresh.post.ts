@@ -1,5 +1,7 @@
+import { eq } from 'drizzle-orm';
+import { usersTable } from '~~/db/schema';
+import { db } from '~~/server/utils/drizzle';
 import { verifyRefreshToken, createAccessToken } from '~~/server/utils/token';
-import { prisma } from '~~/server/utils/prisma';
 
 export default defineEventHandler(async (event) => {
   const refreshToken = getCookie(event, 'refresh_token');
@@ -10,9 +12,12 @@ export default defineEventHandler(async (event) => {
   try {
     const decoded = await verifyRefreshToken(refreshToken);
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-    });
+    const user = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, decoded.userId))
+      .get();
+
     if (!user || user.refreshToken !== refreshToken) {
       throw createError({
         statusCode: 401,

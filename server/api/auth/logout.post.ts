@@ -1,14 +1,17 @@
-import { prisma } from '~~/server/utils/prisma';
+import { eq } from 'drizzle-orm';
+import { usersTable } from '~~/db/schema';
+import { db } from '~~/server/utils/drizzle';
 
 export default defineEventHandler(async (event) => {
   console.log('[SERVER] Received request to /api/auth/logout');
   const refreshToken = getCookie(event, 'refresh_token');
 
   if (refreshToken) {
-    await prisma.user.updateMany({
-      where: { refreshToken },
-      data: { refreshToken: undefined },
-    });
+    await db
+      .update(usersTable)
+      .set({ refreshToken: null })
+      .where(eq(usersTable.refreshToken, refreshToken))
+      .run();
   }
 
   deleteCookie(event, 'access_token');
