@@ -1,75 +1,11 @@
-# Nuxt Minimal Starter
+# Gameserver manager
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+## Setup k8s
 
-## Setup
+On peut utiliser k3sup pour créer le cluster kube et récupérer le kubeconfig `k3sup install --ip 192.168.1.251 --user gatien --context lab --k3s-extra-args "--write-kubeconfig-mode=644"`
 
-Make sure to install dependencies:
+### Install agones
 
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+1. Installer la helmchart `KUBECONFIG=./kubeconfig helm install gameserver-manager --namespace agones-system --create-namespace agones/agones`
+2. Créer le namespace `KUBECONFIG=./kubeconfig kubectl create namespace gameserver`
+3. Updatez la helmchart `KUBECONFIG=./kubeconfig helm upgrade gameserver-manager agones/agones --reuse-values --set "gameservers.namespaces={gameserver}" --namespace agones-system`
